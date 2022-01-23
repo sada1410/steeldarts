@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
     companion object {
         const val EXTRA_FROM_NOTIF = "EXTRA_FROM_NOTIF"
 
-        private const val DEFAULT_FEED_NAME ="Steeldeers News"
+        private const val DEFAULT_FEED_NAME ="Steeldeers"
         private const val DEFAULT_FEED_URL  ="https://steeldeers.de/feed"
 
         var isInForeground = false
@@ -119,10 +119,6 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         }
         nav.layoutManager = LinearLayoutManager(this)
         nav.adapter = feedAdapter
-
-        add_feed_fab.onClick {
-            goToFeedSearch()
-        }
 
         App.db.feedDao().observeAllWithCount.observe(this@MainActivity, { nullableFeeds ->
             nullableFeeds?.let { feeds ->

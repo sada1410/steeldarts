@@ -124,7 +124,7 @@ class FetcherService : IntentService(FetcherService::class.java.simpleName) {
                 else -> { // == Constants.ACTION_REFRESH_FEEDS
                     context.putPrefBoolean(PrefConstants.IS_REFRESHING, true)
 
-                    val readEntriesKeepTime = context.getPrefString(PrefConstants.KEEP_TIME, "4")!!.toLong() * 86400000L
+                    val readEntriesKeepTime = context.getPrefString(PrefConstants.KEEP_TIME, "0")!!.toLong() * 86400000L
                     val readEntriesKeepDate = if (readEntriesKeepTime > 0) System.currentTimeMillis() - readEntriesKeepTime else 0
 
                     val unreadEntriesKeepTime = context.getPrefString(PrefConstants.KEEP_TIME_UNREAD, "0")!!.toLong() * 86400000L
