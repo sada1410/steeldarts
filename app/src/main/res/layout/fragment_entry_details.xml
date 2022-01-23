@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<me.thanel.swipeactionview.SwipeActionView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipe_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorBackground">
+
+    <ImageView
+        android:id="@+id/navigate_before"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/ic_navigate_before_white_24dp" />
+
+    <ImageView
+        android:id="@+id/navigate_next"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="end|center_vertical"
+        android:src="@drawable/ic_navigate_next_white_24dp" />
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/coordinator"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?android:attr/actionBarSize"
+                android:theme="@style/AppTheme.ActionBar.Details" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <de.steeldeers.app.ui.views.SwipeRefreshLayout
+            android:id="@+id/refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/nested_scroll_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical"
+                android:background="?attr/colorBackground">
+
+                <de.steeldeers.app.ui.entrydetails.EntryDetailsView
+                    android:id="@+id/entry_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </androidx.core.widget.NestedScrollView>
+
+        </de.steeldeers.app.ui.views.SwipeRefreshLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</me.thanel.swipeactionview.SwipeActionView>
