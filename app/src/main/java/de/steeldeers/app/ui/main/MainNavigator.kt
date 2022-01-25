@@ -31,9 +31,11 @@ interface MainNavigator {
 
     fun goToFeedSearch()
 
-    fun goToAboutMe()
+    fun goToLicense()
 
     fun goToSettings()
+
+    fun goToSteeldeers()
 
     fun setSelectedEntryId(selectedEntryId: String)
 

@@ -17,9 +17,7 @@
 
 package de.steeldeers.app.ui.main
 
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -49,15 +47,14 @@ import de.steeldeers.app.data.entities.FeedWithCount
 import de.steeldeers.app.data.utils.PrefConstants
 import de.steeldeers.app.service.AutoRefreshJobService
 import de.steeldeers.app.service.FetcherService
-import de.steeldeers.app.ui.about.AboutActivity
+import de.steeldeers.app.ui.about.AppActivity
+import de.steeldeers.app.ui.about.LicenseActivity
 import de.steeldeers.app.ui.discover.DiscoverActivity
-import de.steeldeers.app.ui.discover.FeedManagementInterface
 import de.steeldeers.app.ui.entries.EntriesFragment
 import de.steeldeers.app.ui.entrydetails.EntryDetailsActivity
 import de.steeldeers.app.ui.entrydetails.EntryDetailsFragment
 import de.steeldeers.app.ui.feeds.FeedAdapter
 import de.steeldeers.app.ui.feeds.FeedGroup
-import de.steeldeers.app.ui.feeds.FeedListEditActivity
 import de.steeldeers.app.ui.settings.SettingsActivity
 import de.steeldeers.app.utils.*
 import org.jetbrains.anko.*
@@ -108,8 +105,9 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                     menuInflater.inflate(R.menu.menu_drawer_header, menu)
                     setOnMenuItemClickListener { item ->
                         when (item.itemId) {
-                            R.id.menu_entries__about -> goToAboutMe()
+                            R.id.menu_entries__license -> goToLicense()
                             R.id.menu_entries__settings -> goToSettings()
+                            R.id.menu_entries__steeldeers -> goToSteeldeers()
                         }
                         true
                     }
@@ -404,8 +402,12 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         listFragment.setSelectedEntryId(selectedEntryId)
     }
 
-    override fun goToAboutMe() {
-        startActivity<AboutActivity>()
+    override fun goToLicense() {
+        startActivity<LicenseActivity>()
+    }
+
+    override fun goToSteeldeers() {
+        startActivity<AppActivity>()
     }
 
     override fun goToSettings() {

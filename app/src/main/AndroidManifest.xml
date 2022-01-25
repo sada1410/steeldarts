@@ -107,8 +107,12 @@
             android:label="@string/feeds"
             android:launchMode="singleTask" />
         <activity
-            android:name="de.steeldeers.app.ui.about.AboutActivity"
+            android:name="de.steeldeers.app.ui.about.LicenseActivity"
             android:label="@string/about_steeldeers"
+            android:launchMode="singleTask" />
+        <activity
+            android:name="de.steeldeers.app.ui.about.AppActivity"
+            android:label="@string/about_app"
             android:launchMode="singleTask" />
         <activity
             android:name="de.steeldeers.app.ui.settings.SettingsActivity"

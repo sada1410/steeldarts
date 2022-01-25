@@ -610,11 +610,14 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
                     share(content.take(300000), title) // take() to avoid crashing with a too big intent
                 }
             }
-            R.id.menu_entries__about -> {
-                navigator.goToAboutMe()
+            R.id.menu_entries__license -> {
+                navigator.goToLicense()
             }
             R.id.menu_entries__settings -> {
                 navigator.goToSettings()
+            }
+            R.id.menu_entries__app -> {
+                navigator.goToSteeldeers()
             }
         }
 

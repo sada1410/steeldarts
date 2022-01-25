@@ -7,7 +7,8 @@
         <item quantity="other">%d new entries</item>
     </plurals>
     <string name="app_name">Steeldeers</string>
-    <string name="about_steeldeers">About Steeldeers</string>
+    <string name="about_app">About Steeldeers</string>
+    <string name="about_steeldeers">License</string>
     <string name="welcome_title">Welcome to Steeldeers. Would you like to add a feed?</string>
     <string name="cannot_find_feeds">No feeds have been found</string>
     <string name="menu_settings">Settings</string>
@@ -22,7 +23,60 @@
     <string name="network_error">The network is not set up</string>
     <string name="drawer_explanation">Welcome!\n\nLong press on the feeds to see options ▼</string>
     <string name="drawer_fetch_error_explanation">Some of your feeds did not refresh correctly ▼</string>
-    <string name="about_screen_info">I\'m publishing this application as free and open-source software under GPLv3 licence. Feel free to modify it as long as you keep it open-source as well.</string>
+    <string name="about_screen_info">
+This is us\n\n
+
+The Steel Deers:\n
+We are the dart department of the TSV Hirschaid.\n\n
+
+Our goal:\n
+Just play darts, without stress, with fun, in a team.\n\n
+
+Our highest principle:\n
+Darts as a club sport - for every level, for every age, in a professional environment:\n\n
+
+At you can play darts relaxed - we are a club and not a pub !</string>
+    <string name="license_screen_info">This app is open-source and uses open-source.\n\n
+        Flym (https://github.com/FredJul/Flym):\n
+        Copyright (c) 2012-2015 Frederic Julian\n\n
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.\n\n
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.\n\n
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see "https://www.gnu.org/licenses/".\n\n\n
+
+Sparse rss (https://github.com/doits/Sparse-RSS):\n
+Some parts of this software are based on "Sparse rss" under the MIT license (see
+below). Please refers to the original project to identify which parts are under the
+MIT license.\n\n
+
+Copyright (c) 2010-2012 Stefan Handschuh\n\n
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:\n\n
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.\n\n
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.</string>
     <string name="navigation_button_content_description">Toggle feed menu</string>
 
     <!-- FEEDS -->

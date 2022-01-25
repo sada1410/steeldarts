@@ -7,9 +7,11 @@
         android:id="@+id/menu_entries__settings"
         android:title="@string/menu_settings"
         app:showAsAction="never" />
-
     <item
-        android:id="@+id/menu_entries__about"
+        android:id="@+id/menu_entries__steeldeers"
+        android:title="@string/about_app" />
+    <item
+        android:id="@+id/menu_entries__license"
         android:title="@string/about_steeldeers"
         app:showAsAction="never" />
 </menu>
