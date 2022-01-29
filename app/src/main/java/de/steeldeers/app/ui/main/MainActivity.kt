@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         const val EXTRA_FROM_NOTIF = "EXTRA_FROM_NOTIF"
 
         private const val DEFAULT_FEED_NAME ="Steeldeers"
-        private const val DEFAULT_FEED_URL  ="https://medtech-ingenieur.de/feed"
+        private const val DEFAULT_FEED_URL  ="https://steeldeers.de/feed"
 
         var isInForeground = false
 
