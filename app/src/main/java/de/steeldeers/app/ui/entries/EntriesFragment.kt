@@ -57,6 +57,8 @@ import de.steeldeers.app.ui.main.MainActivity
 import de.steeldeers.app.ui.main.MainNavigator
 import de.steeldeers.app.utils.*
 import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.logoResource
+import org.jetbrains.anko.appcompat.v7.subtitleResource
 import org.jetbrains.anko.appcompat.v7.titleResource
 import org.jetbrains.anko.sdk21.listeners.onClick
 import org.jetbrains.anko.support.v4.dip
@@ -101,6 +103,9 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
                 navigator.goToEntryDetails(entryWithFeed.entry.id, entryIds!!)
             },
             globalLongClickListener = { entryWithFeed ->
+                share(entryWithFeed.entry.link.orEmpty(), entryWithFeed.entry.title.orEmpty())
+            },
+            shareClickListener = { entryWithFeed ->
                 share(entryWithFeed.entry.link.orEmpty(), entryWithFeed.entry.title.orEmpty())
             },
             favoriteClickListener = { entryWithFeed, view ->
@@ -518,11 +523,14 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
 
     private fun setupTitle() {
         activity?.toolbar?.apply {
-            if (feed == null || feed?.id == Feed.ALL_ENTRIES_ID) {
-                titleResource = R.string.all_entries
-            } else {
-                title = feed?.title
-            }
+//            if (feed == null || feed?.id == Feed.ALL_ENTRIES_ID) {
+                setLogo(R.mipmap.ic_logo_foreground)
+                title = ""
+//                subtitleResource = R.string.all_entries
+//                titleResource = R.string.all_entries
+//            } else {
+//                title = feed?.title
+//            }
         }
     }
 

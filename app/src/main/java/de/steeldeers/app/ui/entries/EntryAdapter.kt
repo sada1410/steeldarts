@@ -40,7 +40,7 @@ import org.jetbrains.anko.sdk21.listeners.onLongClick
 import org.jetbrains.anko.uiThread
 
 
-class EntryAdapter(var displayThumbnails: Boolean, private val globalClickListener: (EntryWithFeed) -> Unit, private val globalLongClickListener: (EntryWithFeed) -> Unit, private val favoriteClickListener: (EntryWithFeed, ImageView) -> Unit) : PagedListAdapter<EntryWithFeed, EntryAdapter.ViewHolder>(DIFF_CALLBACK) {
+class EntryAdapter(var displayThumbnails: Boolean, private val globalClickListener: (EntryWithFeed) -> Unit, private val globalLongClickListener: (EntryWithFeed) -> Unit, private val shareClickListener: (EntryWithFeed) -> Unit, private val favoriteClickListener: (EntryWithFeed, ImageView) -> Unit) : PagedListAdapter<EntryWithFeed, EntryAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     companion object {
 
@@ -65,7 +65,7 @@ class EntryAdapter(var displayThumbnails: Boolean, private val globalClickListen
             doAsync {
                 val mainImgUrl = if (TextUtils.isEmpty(entryWithFeed.entry.imageLink)) null else FetcherService.getDownloadedOrDistantImageUrl(entryWithFeed.entry.id, entryWithFeed.entry.imageLink!!)
                 uiThread {
-                    val letterDrawable = Feed.getLetterDrawable(entryWithFeed.entry.feedId, entryWithFeed.feedTitle)
+                    val letterDrawable = Feed.getLetterDrawable(entryWithFeed.entry.feedId, entryWithFeed.entry.title)
                     if (mainImgUrl != null) {
                         GlideApp.with(context).load(mainImgUrl).centerCrop().transition(withCrossFade(CROSS_FADE_FACTORY)).placeholder(letterDrawable).error(letterDrawable).into(main_icon)
                     } else {
@@ -92,6 +92,11 @@ class EntryAdapter(var displayThumbnails: Boolean, private val globalClickListen
                         favorite_icon.setImageResource(R.drawable.ic_star_border_24dp)
                     }
                     favorite_icon.onClick { favoriteClickListener(entryWithFeed, favorite_icon) }
+
+                    share_icon.onClick {
+                        shareClickListener(entryWithFeed)
+                        true
+                    }
 
                     onClick { globalClickListener(entryWithFeed) }
                     onLongClick {

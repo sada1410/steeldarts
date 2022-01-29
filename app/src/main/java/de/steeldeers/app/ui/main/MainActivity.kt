@@ -49,7 +49,6 @@ import de.steeldeers.app.service.AutoRefreshJobService
 import de.steeldeers.app.service.FetcherService
 import de.steeldeers.app.ui.about.AppActivity
 import de.steeldeers.app.ui.about.LicenseActivity
-import de.steeldeers.app.ui.discover.DiscoverActivity
 import de.steeldeers.app.ui.entries.EntriesFragment
 import de.steeldeers.app.ui.entrydetails.EntryDetailsActivity
 import de.steeldeers.app.ui.entrydetails.EntryDetailsFragment
@@ -71,7 +70,7 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         const val EXTRA_FROM_NOTIF = "EXTRA_FROM_NOTIF"
 
         private const val DEFAULT_FEED_NAME ="Steeldeers"
-        private const val DEFAULT_FEED_URL  ="https://steeldeers.de/feed"
+        private const val DEFAULT_FEED_URL  ="https://medtech-ingenieur.de/feed"
 
         var isInForeground = false
 
@@ -269,29 +268,30 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
     private fun handleImplicitIntent(intent: Intent?) {
         // Has to be called on onStart (when the app is closed) and on onNewIntent (when the app is in the background)
 
+        // TODO delete these lines, if not required
         // Add feed urls from Open with
-        if (intent?.action.equals(Intent.ACTION_VIEW)) {
-            val search: String = intent?.data.toString()
-            DiscoverActivity.newInstance(this, search)
-            setIntent(null)
-        }
-        // Add feed urls from Share menu
-        if (intent?.action.equals(Intent.ACTION_SEND)) {
-            if (intent?.hasExtra(Intent.EXTRA_TEXT) == true) {
-                val search = intent.getStringExtra(Intent.EXTRA_TEXT)
-                if (search != null) {
-                    DiscoverActivity.newInstance(this, search)
-                }
-            }
-            setIntent(null)
-        }
-
-        // If we just clicked on the notification, let's go back to the default view
-        if (intent?.getBooleanExtra(EXTRA_FROM_NOTIF, false) == true && feedGroups.isNotEmpty()) {
-            feedAdapter.selectedItemId = Feed.ALL_ENTRIES_ID
-            goToEntriesList(feedGroups[0].feedWithCount.feed)
-            bottom_navigation.selectedItemId = R.id.unreads
-        }
+//        if (intent?.action.equals(Intent.ACTION_VIEW)) {
+//            val search: String = intent?.data.toString()
+//            DiscoverActivity.newInstance(this, search)
+//            setIntent(null)
+//        }
+//        // Add feed urls from Share menu
+//        if (intent?.action.equals(Intent.ACTION_SEND)) {
+//            if (intent?.hasExtra(Intent.EXTRA_TEXT) == true) {
+//                val search = intent.getStringExtra(Intent.EXTRA_TEXT)
+//                if (search != null) {
+//                    DiscoverActivity.newInstance(this, search)
+//                }
+//            }
+//            setIntent(null)
+//        }
+//
+//        // If we just clicked on the notification, let's go back to the default view
+//        if (intent?.getBooleanExtra(EXTRA_FROM_NOTIF, false) == true && feedGroups.isNotEmpty()) {
+//            feedAdapter.selectedItemId = Feed.ALL_ENTRIES_ID
+//            goToEntriesList(feedGroups[0].feedWithCount.feed)
+//            bottom_navigation.selectedItemId = R.id.unreads
+//        }
     }
 
     private fun handleResumeOnlyIntents(intent: Intent?) {
@@ -371,8 +371,8 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                     .commitAllowingStateLoss()
         }
     }
-
-    override fun goToFeedSearch() = DiscoverActivity.newInstance(this)
+// TODO delete this line, if not required
+//    override fun goToFeedSearch() = DiscoverActivity.newInstance(this)
 
     override fun goToEntryDetails(entryId: String, allEntryIds: List<String>) {
         closeKeyboard()
