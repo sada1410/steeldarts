@@ -59,6 +59,7 @@ data class Feed(
     companion object {
 
         const val ALL_ENTRIES_ID = -1L
+        const val SPONSORS       = -2L
 
         fun getLetterDrawable(feedId: Long, feedTitle: String?, rounded: Boolean = false): TextDrawable {
             val feedName = feedTitle.orEmpty()

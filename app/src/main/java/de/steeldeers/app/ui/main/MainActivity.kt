@@ -37,7 +37,6 @@ import com.rometools.opml.io.impl.OPML20Generator
 import com.rometools.rome.io.WireFeedInput
 import com.rometools.rome.io.WireFeedOutput
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.dialog_edit_feed.view.*
 import kotlinx.android.synthetic.main.fragment_entries.*
 import kotlinx.android.synthetic.main.view_main_drawer_header.*
 import net.fred.feedex.R
@@ -55,6 +54,7 @@ import de.steeldeers.app.ui.entrydetails.EntryDetailsFragment
 import de.steeldeers.app.ui.feeds.FeedAdapter
 import de.steeldeers.app.ui.feeds.FeedGroup
 import de.steeldeers.app.ui.settings.SettingsActivity
+import de.steeldeers.app.ui.sponsors.SponsorFragment
 import de.steeldeers.app.utils.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk21.listeners.onClick
@@ -69,8 +69,13 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
     companion object {
         const val EXTRA_FROM_NOTIF = "EXTRA_FROM_NOTIF"
 
-        private const val DEFAULT_FEED_NAME ="Steeldeers"
-        private const val DEFAULT_FEED_URL  ="https://steeldeers.de/feed"
+        val reqFeeds = arrayOf(
+                //       Menu name     Link to feed
+                arrayOf("Steeldeers", "https://steeldeers.de/feed"),
+                arrayOf("Medtech-Ingenieur Software", "https://medtech-ingenieur.de/category/software/feed"),
+                arrayOf("Medtech-Ingenieur Hardware", "https://medtech-ingenieur.de/category/hardware/feed"),
+                arrayOf("Medtech-Ingenieur Mechanik", "https://medtech-ingenieur.de/category/mechanik/feed")
+        )
 
         var isInForeground = false
 
@@ -120,23 +125,58 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         App.db.feedDao().observeAllWithCount.observe(this@MainActivity, { nullableFeeds ->
             nullableFeeds?.let { feeds ->
                 val newFeedGroups = mutableListOf<FeedGroup>()
+                val socialFeedGroup = mutableListOf<FeedGroup>()
 
                 val all = FeedWithCount(feed = Feed().apply {
                     id = Feed.ALL_ENTRIES_ID
                     title = getString(R.string.all_entries)
+                    groupId = 0
+                    isGroup = true
                 }, entryCount = feeds.sumBy { it.entryCount })
                 newFeedGroups.add(FeedGroup(all, listOf()))
 
                 val subFeedMap = feeds.groupBy { it.feed.groupId }
+//                for(feed in subFeedMap) {
+//                    feed.grou
+//                }
 
                 newFeedGroups.addAll(
                         subFeedMap[null]?.map { FeedGroup(it, subFeedMap[it.feed.id].orEmpty()) }.orEmpty()
                 )
 
+                val sponsors = FeedWithCount(feed = Feed().apply {
+                    id = Feed.SPONSORS
+                    title = "Sponsoren"
+                    groupId = 1
+                    isGroup = true
+                }, entryCount = 0)
+
+                val test1 = FeedWithCount(feed = Feed().apply {
+                    id = Feed.SPONSORS-1
+                    title = "test1"
+                    groupId = 1
+                    isGroup = true
+                }, entryCount = 0)
+
+                val test2 = FeedWithCount(feed = Feed().apply {
+                    id = Feed.SPONSORS-2
+                    title = "test2"
+                    groupId = 1
+                    isGroup = true
+                }, entryCount = 0)
+
+                val test = arrayListOf<FeedWithCount>()
+                test.add(sponsors)
+                test.add(test1)
+                test.add(test2)
+                socialFeedGroup.add(FeedGroup(sponsors,test))
+
                 // Do not always call notifyParentDataSetChanged to avoid selection loss during refresh
                 if (hasFeedGroupsChanged(feedGroups, newFeedGroups)) {
                     feedGroups.clear()
                     feedGroups += newFeedGroups
+                    feedGroups += socialFeedGroup
+
                     feedAdapter.notifyParentDataSetChanged(true)
 
                     if (hasFetchingError()) {
@@ -151,8 +191,14 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                 }
 
                 feedAdapter.onFeedClick { _, feedWithCount ->
-                    goToEntriesList(feedWithCount.feed)
-                    closeDrawer()
+                    if(feedWithCount.feed.id == Feed.SPONSORS) {
+                        goToSponsors()
+                        closeDrawer()
+                    }
+                    else {
+                        goToEntriesList(feedWithCount.feed)
+                        closeDrawer()
+                    }
                 }
 
                 feedAdapter.onFeedLongClick { view, feedWithCount ->
@@ -192,23 +238,24 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
             }
         })
 
-        doAsync {
-            if ( App.db.feedDao().findByLink(DEFAULT_FEED_URL) == null ) {
-                val feedToAdd = Feed(0, DEFAULT_FEED_URL, DEFAULT_FEED_NAME)
-                App.db.feedDao().insert(feedToAdd)
-            }
-        }
-
         if (savedInstanceState == null) {
             // First open => we open the drawer for you
             if (getPrefBoolean(PrefConstants.FIRST_OPEN, true)) {
                 putPrefBoolean(PrefConstants.FIRST_OPEN, false)
 //                openDrawer()
 //               showAlertDialog(R.string.welcome_title) { goToFeedSearch() }
+                App.db.feedDao().deleteAll()
                 closeDrawer()
             }
 
               goToEntriesList(null)
+        }
+
+        doAsync {
+            if( !allFeedsAvailable() ) {
+                addMissingFeeds()
+            }
+            removeDeprecatedFeeds()
         }
 
         if (getPrefBoolean(PrefConstants.REFRESH_ON_STARTUP, defValue = true)) {
@@ -224,6 +271,51 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         AutoRefreshJobService.initAutoRefresh(this)
 
         handleImplicitIntent(intent)
+    }
+
+    /**
+     * @brief adds missing feeds to the database
+     */
+    private fun addMissingFeeds() {
+        for(i in reqFeeds.indices) {
+            if ( App.db.feedDao().findByLink(reqFeeds[i][1]) == null ) {
+                val feedToAdd = Feed(0, reqFeeds[i][1], reqFeeds[i][0])
+                App.db.feedDao().insert(feedToAdd)
+            }
+        }
+    }
+
+    /**
+     * @brief checks if old feeds are in the database and removes them
+     */
+    private fun removeDeprecatedFeeds() {
+        var allFeeds = App.db.feedDao().all
+        for(feed in allFeeds) {
+            var found = false
+            for(i in reqFeeds.indices) {
+                if(Arrays.stream(reqFeeds[i]).anyMatch { t -> t == feed.link }) {
+                    found = true
+                    break
+                }
+            }
+            if(!found) {
+                App.db.feedDao().delete(feed)
+            }
+        }
+    }
+
+    /**
+     * @brief checks if all required feeds are in the database
+     * @return true if all required feeds are available, else false
+     */
+    private fun allFeedsAvailable():Boolean {
+        var available = true
+        for(i in reqFeeds.indices) {
+            if ( App.db.feedDao().findByLink(reqFeeds[i][1]) == null ) {
+                available = false
+            }
+        }
+        return available
     }
 
     override fun onStart() {
@@ -354,6 +446,22 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         }
     }
 
+    private fun goToSponsors() {
+        clearDetails()
+        containers_layout.state = MainNavigator.State.TWO_COLUMNS_EMPTY
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.frame_master)
+        if (currentFragment is SponsorFragment) {
+            // nothing to do
+        } else {
+            val master = SponsorFragment.newInstance()
+            supportFragmentManager
+                    .beginTransaction()
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                    .replace(R.id.frame_master, master, TAG_MASTER)
+                    .commitAllowingStateLoss()
+        }
+    }
+
     override fun goToEntriesList(feed: Feed?) {
         clearDetails()
         containers_layout.state = MainNavigator.State.TWO_COLUMNS_EMPTY
@@ -449,131 +557,14 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         return false
     }
 
-    private fun pickOpml() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            type = "*/*" // https://github.com/FredJul/Steeldeers/issues/407
-            addCategory(Intent.CATEGORY_OPENABLE)
-        }
-        startActivityForResult(intent, READ_OPML_REQUEST_CODE)
-    }
-
-    private fun exportOpml() {
-        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            type = "text/*"
-            addCategory(Intent.CATEGORY_OPENABLE)
-            putExtra(Intent.EXTRA_TITLE, "Steeldeers_" + System.currentTimeMillis() + ".opml")
-        }
-        startActivityForResult(intent, WRITE_OPML_REQUEST_CODE)
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
 
-        if (requestCode == READ_OPML_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            resultData?.data?.also { uri -> importOpml(uri) }
-        } else if (requestCode == WRITE_OPML_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            resultData?.data?.also { uri -> exportOpml(uri) }
-        }
-    }
-
-    private fun importOpml(uri: Uri) {
-        doAsync {
-            try {
-                InputStreamReader(contentResolver.openInputStream(uri)!!).use { reader -> parseOpml(reader) }
-            } catch (e: Exception) {
-                try {
-                    // We try to remove the opml version number, it may work better in some cases
-                    val content = BufferedInputStream(contentResolver.openInputStream(uri)!!).bufferedReader().use { it.readText() }
-                    val fixedReader = StringReader(content.replace("<opml version=['\"][0-9]\\.[0-9]['\"]>".toRegex(), "<opml>"))
-                    parseOpml(fixedReader)
-                } catch (e: Exception) {
-                    uiThread { toast(R.string.cannot_find_feeds) }
-                }
-            }
-        }
-    }
-
-    private fun exportOpml(uri: Uri) {
-        doAsync {
-            try {
-                OutputStreamWriter(contentResolver.openOutputStream(uri)!!, Charsets.UTF_8).use { writer -> exportOpml(writer) }
-                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        val fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-                        uiThread { toast(String.format(getString(R.string.message_exported_to), fileName)) }
-                    }
-                }
-            } catch (e: Exception) {
-                uiThread { toast(R.string.error_feed_export) }
-            }
-        }
-    }
-
-    private fun parseOpml(opmlReader: Reader) {
-        var genId = 1L
-        val feedList = mutableListOf<Feed>()
-        val opml = WireFeedInput().build(opmlReader) as Opml
-        opml.outlines.forEach { outline ->
-            if (outline.xmlUrl != null || outline.children.isNotEmpty()) {
-                val topLevelFeed = Feed().apply {
-                    id = genId++
-                    title = outline.title
-                }
-
-                if (outline.xmlUrl != null) {
-                    if (!outline.xmlUrl.startsWith(OLD_GNEWS_TO_IGNORE)) {
-                        topLevelFeed.link = outline.xmlUrl
-                        topLevelFeed.retrieveFullText = outline.getAttributeValue(RETRIEVE_FULLTEXT_OPML_ATTR) == "true"
-                        feedList.add(topLevelFeed)
-                    }
-                } else {
-                    topLevelFeed.isGroup = true
-                    feedList.add(topLevelFeed)
-
-                    outline.children.filter { it.xmlUrl != null && !it.xmlUrl.startsWith(OLD_GNEWS_TO_IGNORE) }.forEach {
-                        val subLevelFeed = Feed().apply {
-                            id = genId++
-                            title = it.title
-                            link = it.xmlUrl
-                            retrieveFullText = it.getAttributeValue(RETRIEVE_FULLTEXT_OPML_ATTR) == "true"
-                            groupId = topLevelFeed.id
-                        }
-
-                        feedList.add(subLevelFeed)
-                    }
-                }
-            }
-        }
-
-        if (feedList.isNotEmpty()) {
-            App.db.feedDao().insert(*feedList.toTypedArray())
-        }
-    }
-
-    private fun exportOpml(opmlWriter: Writer) {
-        val feeds = App.db.feedDao().all.groupBy { it.groupId }
-
-        val opml = Opml().apply {
-            feedType = OPML20Generator().type
-            encoding = "utf-8"
-            created = Date()
-            outlines = feeds[null]?.map { feed ->
-                Outline(feed.title, if (feed.link.isNotBlank()) URL(feed.link) else null, null).apply {
-                    children = feeds[feed.id]?.map {
-                        Outline(it.title, if (it.link.isNotBlank()) URL(it.link) else null, null).apply {
-                            if (it.retrieveFullText) {
-                                attributes.add(Attribute(RETRIEVE_FULLTEXT_OPML_ATTR, "true"))
-                            }
-                        }
-                    }
-                    if (feed.retrieveFullText) {
-                        attributes.add(Attribute(RETRIEVE_FULLTEXT_OPML_ATTR, "true"))
-                    }
-                }
-            }
-        }
-
-        WireFeedOutput().output(opml, opmlWriter)
+//        if (requestCode == READ_OPML_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+//            resultData?.data?.also { uri -> importOpml(uri) }
+//        } else if (requestCode == WRITE_OPML_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+//            resultData?.data?.also { uri -> exportOpml(uri) }
+//        }
     }
 
     private fun closeDrawer() {

@@ -4,13 +4,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/coordinator"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/colorBackground">
+    android:layout_height="match_parent">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar_layout"
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:stateListAnimator="@animator/appbar_always_elevated">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -20,26 +20,13 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <de.steeldeers.app.ui.views.SwipeRefreshLayout
-        android:id="@+id/recycler_layout"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/sponsors_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/nested_scroll_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            android:background="?attr/colorBackground">
 
-            <de.steeldeers.app.ui.entrydetails.EntryDetailsView
-                android:id="@+id/entry_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </androidx.core.widget.NestedScrollView>
-
-    </de.steeldeers.app.ui.views.SwipeRefreshLayout>
+    </com.google.android.material.tabs.TabLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

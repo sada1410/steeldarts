@@ -23,6 +23,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import net.fred.feedex.R
 import de.steeldeers.app.utils.setupNoActionBarTheme
+import kotlinx.android.synthetic.main.fragment_entries.*
 import org.jetbrains.anko.backgroundColor
 
 class EntryDetailsActivity : AppCompatActivity() {

@@ -17,6 +17,7 @@
 
 package de.steeldeers.app.data.dao
 
+import androidx.annotation.Size
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
@@ -55,6 +56,9 @@ abstract class EntryDao {
 
     @Query("SELECT id FROM entries WHERE $OLDER AND read = 0 $ORDER_BY")
     abstract fun observeAllUnreadIds(maxDate: Long, isDesc: Boolean): LiveData<List<String>>
+
+    @Query("SELECT COUNT(*) FROM entries")
+    abstract fun observeAllUnreadsCount(): Int
 
     @Query("SELECT id FROM entries WHERE $OLDER AND favorite = 1 $ORDER_BY")
     abstract fun observeAllFavoriteIds(maxDate: Long, isDesc: Boolean): LiveData<List<String>>
@@ -112,6 +116,9 @@ abstract class EntryDao {
 
     @get:Query("SELECT COUNT(*) FROM entries WHERE read = 0")
     abstract val countUnread: Long
+
+    @Query("SELECT COUNT(*) FROM entries WHERE read = 0 AND feedId = (:feedId)")
+    abstract fun countUnreadByFeedId(feedId: Long): Long
 
     @Query("SELECT * FROM entries WHERE id IS :id LIMIT 1")
     abstract fun findById(id: String): Entry?

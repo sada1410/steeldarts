@@ -103,10 +103,6 @@
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="de.steeldeers.app.ui.feeds.FeedListEditActivity"
-            android:label="@string/feeds"
-            android:launchMode="singleTask" />
-        <activity
             android:name="de.steeldeers.app.ui.about.LicenseActivity"
             android:label="@string/about_steeldeers"
             android:launchMode="singleTask" />
@@ -116,6 +112,7 @@
             android:launchMode="singleTask" />
         <activity
             android:name="de.steeldeers.app.ui.settings.SettingsActivity"
+            android:label="@string/menu_settings"
             android:launchMode="singleTask" />
 
         <meta-data

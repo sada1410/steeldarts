@@ -28,7 +28,7 @@ class FeedGroup(val feedWithCount: FeedWithCount, val subFeeds: List<FeedWithCou
     }
 
     override fun isInitiallyExpanded(): Boolean {
-        return false
+        return true
     }
 
     // needed to preserve expansion state

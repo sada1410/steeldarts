@@ -69,4 +69,7 @@ abstract class FeedDao {
 
     @Delete
     abstract fun delete(vararg feeds: Feed)
+
+    @Query("DELETE FROM feeds")
+    abstract fun deleteAll()
 }

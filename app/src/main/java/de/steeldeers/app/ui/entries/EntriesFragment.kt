@@ -44,7 +44,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_entries.*
 import kotlinx.android.synthetic.main.fragment_entries.coordinator
-import kotlinx.android.synthetic.main.fragment_entries.refresh_layout
+import kotlinx.android.synthetic.main.fragment_entries.recycler_layout
 import kotlinx.android.synthetic.main.fragment_entries.toolbar
 import kotlinx.android.synthetic.main.view_entry.view.*
 import net.fred.feedex.R
@@ -57,9 +57,6 @@ import de.steeldeers.app.ui.main.MainActivity
 import de.steeldeers.app.ui.main.MainNavigator
 import de.steeldeers.app.utils.*
 import org.jetbrains.anko.*
-import org.jetbrains.anko.appcompat.v7.logoResource
-import org.jetbrains.anko.appcompat.v7.subtitleResource
-import org.jetbrains.anko.appcompat.v7.titleResource
 import org.jetbrains.anko.sdk21.listeners.onClick
 import org.jetbrains.anko.support.v4.dip
 import org.jetbrains.anko.support.v4.share
@@ -226,6 +223,7 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
                 if (feed == null || feed?.id == Feed.ALL_ENTRIES_ID) {
                     activity?.notificationManager?.cancel(0)
                 }
+                updateBadgeUnread()
             }
         }
     }
@@ -285,13 +283,19 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
                 if (entryIds?.isEmpty() == true && bottom_navigation.selectedItemId != R.id.favorites) {
                     listDisplayDate = Date().time
                     initDataObservers()
-                } else {
-                    unreadBadge?.badgeNumber = count.toInt()
                 }
-            } else {
-                unreadBadge?.hide(false)
             }
         })
+        updateBadgeUnread()
+    }
+
+    private fun updateBadgeUnread() {
+        if(feed?.id != null && feed?.id != Feed.ALL_ENTRIES_ID) {
+            doAsync { unreadBadge?.badgeNumber = App.db.entryDao().countUnreadByFeedId(feed!!.id).toInt() }
+        }
+        else {
+            doAsync { unreadBadge?.badgeNumber = App.db.entryDao().countUnread.toInt() }
+        }
     }
 
     override fun onStart() {
@@ -422,12 +426,12 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
         recycler_view.layoutManager = layoutManager
         recycler_view.adapter = adapter
 
-        refresh_layout.setColorScheme(R.color.colorAccent,
+        recycler_layout.setColorScheme(R.color.colorAccent,
                 requireContext().attr(R.attr.colorPrimaryDark).resourceId,
                 R.color.colorAccent,
                 requireContext().attr(R.attr.colorPrimaryDark).resourceId)
 
-        refresh_layout.setOnRefreshListener {
+        recycler_layout.setOnRefreshListener {
             startRefresh()
         }
 
@@ -458,7 +462,7 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
                             App.db.entryDao().markAsUnread(listOf(entryWithFeed.entry.id))
                             snackbarMessage = R.string.marked_as_unread
                         }
-
+                        updateBadgeUnread()
                         Snackbar
                                 .make(coordinator, snackbarMessage, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo) { _ ->
@@ -468,6 +472,7 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
                                         } else {
                                             App.db.entryDao().markAsRead(listOf(entryWithFeed.entry.id))
                                         }
+                                        updateBadgeUnread()
                                     }
                                 }
                                 .apply {
@@ -518,20 +523,7 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
         }
 
         // In case there is no internet, the service won't even start, let's quickly stop the refresh animation
-        refresh_layout.postDelayed({ refreshSwipeProgress() }, 500)
-    }
-
-    private fun setupTitle() {
-        activity?.toolbar?.apply {
-//            if (feed == null || feed?.id == Feed.ALL_ENTRIES_ID) {
-                setLogo(R.mipmap.ic_logo_foreground)
-                title = ""
-//                subtitleResource = R.string.all_entries
-//                titleResource = R.string.all_entries
-//            } else {
-//                title = feed?.title
-//            }
-        }
+        recycler_layout.postDelayed({ refreshSwipeProgress() }, 500)
     }
 
     private fun showNavigationIfRecyclerViewCannotScroll() {
@@ -632,12 +624,25 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
         return true
     }
 
+    private fun setupTitle() {
+        activity?.toolbar?.apply {
+//            if (feed == null || feed?.id == Feed.ALL_ENTRIES_ID) {
+            title = ""
+//                subtitleResource = R.string.all_entries
+//                titleResource = R.string.all_entries
+//            } else {
+//                title = feed?.title
+//            }
+        }
+    }
+
     fun setSelectedEntryId(selectedEntryId: String) {
         adapter.selectedEntryId = selectedEntryId
     }
 
     private fun refreshSwipeProgress() {
-        refresh_layout.isRefreshing = context?.getPrefBoolean(PrefConstants.IS_REFRESHING, false)
+        updateBadgeUnread()
+        recycler_layout.isRefreshing = context?.getPrefBoolean(PrefConstants.IS_REFRESHING, false)
                 ?: false
     }
 }

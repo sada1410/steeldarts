@@ -48,6 +48,10 @@ import de.steeldeers.app.ui.main.MainNavigator
 import de.steeldeers.app.utils.getPrefBoolean
 import de.steeldeers.app.utils.isGestureNavigationEnabled
 import de.steeldeers.app.utils.isOnline
+import kotlinx.android.synthetic.main.fragment_entries.*
+import kotlinx.android.synthetic.main.fragment_entry_details.coordinator
+import kotlinx.android.synthetic.main.fragment_entry_details.recycler_layout
+import kotlinx.android.synthetic.main.fragment_entry_details.toolbar
 import org.jetbrains.anko.attr
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.imageResource
@@ -118,12 +122,12 @@ class EntryDetailsFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        refresh_layout.setColorScheme(R.color.colorAccent,
+        recycler_layout.setColorScheme(R.color.colorAccent,
             requireContext().attr(R.attr.colorPrimaryDark).resourceId,
             R.color.colorAccent,
             requireContext().attr(R.attr.colorPrimaryDark).resourceId)
 
-        refresh_layout.setOnRefreshListener {
+        recycler_layout.setOnRefreshListener {
             switchFullTextMode()
         }
 
@@ -195,13 +199,13 @@ class EntryDetailsFragment : Fragment() {
 
     private fun initDataObservers() {
         isMobilizingLiveData?.removeObservers(viewLifecycleOwner)
-        refresh_layout.isRefreshing = false
+        recycler_layout.isRefreshing = false
 
         isMobilizingLiveData = App.db.taskDao().observeItemMobilizationTasksCount(entryId)
         isMobilizingLiveData?.observe(viewLifecycleOwner, { count ->
             if (count ?: 0 > 0) {
                 isMobilizing = true
-                refresh_layout.isRefreshing = true
+                recycler_layout.isRefreshing = true
 
                 // If the service is not started, start it here to avoid an infinite loading
                 if (context?.getPrefBoolean(PrefConstants.IS_REFRESHING, false) == false) {
@@ -222,7 +226,7 @@ class EntryDetailsFragment : Fragment() {
                 }
 
                 isMobilizing = false
-                refresh_layout.isRefreshing = false
+                recycler_layout.isRefreshing = false
             }
         })
     }
@@ -230,7 +234,7 @@ class EntryDetailsFragment : Fragment() {
     private fun setupToolbar() {
         toolbar.apply {
             entryWithFeed?.let { entryWithFeed ->
-                title = entryWithFeed.feedTitle
+                title = ""
 
                 menu.clear()
                 inflateMenu(R.menu.menu_fragment_entry_details)
@@ -320,19 +324,19 @@ class EntryDetailsFragment : Fragment() {
                                 c.startService(Intent(c, FetcherService::class.java).setAction(FetcherService.ACTION_MOBILIZE_FEEDS))
                             }
                         } else {
-                            refresh_layout.isRefreshing = false
+                            recycler_layout.isRefreshing = false
                             toast(R.string.network_error).show()
                         }
                     }
                 } else {
-                    refresh_layout.isRefreshing = false
+                    recycler_layout.isRefreshing = false
                     preferFullText = true
                     entry_view.setEntry(entryWithFeed, preferFullText)
 
                     setupToolbar()
                 }
             } else {
-                refresh_layout.isRefreshing = isMobilizing
+                recycler_layout.isRefreshing = isMobilizing
                 preferFullText = false
                 entry_view.setEntry(entryWithFeed, preferFullText)
 
