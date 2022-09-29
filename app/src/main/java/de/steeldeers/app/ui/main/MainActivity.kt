@@ -28,6 +28,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.*
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.rometools.opml.feed.opml.Attribute
@@ -71,10 +72,14 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
 
         val reqFeeds = arrayOf(
                 //       Menu name     Link to feed
-                arrayOf("Steeldeers", "https://steeldeers.de/feed"),
-                arrayOf("Medtech-Ingenieur Software", "https://medtech-ingenieur.de/category/software/feed"),
-                arrayOf("Medtech-Ingenieur Hardware", "https://medtech-ingenieur.de/category/hardware/feed"),
-                arrayOf("Medtech-Ingenieur Mechanik", "https://medtech-ingenieur.de/category/mechanik/feed")
+                arrayOf("Allgemeine Berichte", "https://steeldeers.de/allg-berichte/feed"),
+                arrayOf("Events", "https://steeldeers.de/category/events/feed"),
+                arrayOf("Livestreams", "https://steeldeers.de/category/livestream/feed"),
+                arrayOf("Spielberichte", "https://steeldeers.de/category/spielberichte/feed"),
+                arrayOf("Spielberichte NOBDV", "https://steeldeers.de/category/spielberichte-nobdv/feed"),
+                arrayOf("Spielberichte NOBDV Pokal", "https://steeldeers.de/category/spielberichte-nobdv/spielberichte-nobdv-pokal/feed"),
+                arrayOf("Spielberichte NOBDV Team 1", "https://steeldeers.de/category/spielberichte-nobdv/spielberichte-nobdv-team-1/feed"),
+                arrayOf("Spielberichte NOBDV Team 2", "https://steeldeers.de/category/spielberichte-nobdv/spielberichte-nobdv-team-2/feed"),
         )
 
         var isInForeground = false
@@ -130,15 +135,10 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                 val all = FeedWithCount(feed = Feed().apply {
                     id = Feed.ALL_ENTRIES_ID
                     title = getString(R.string.all_entries)
-                    groupId = 0
-                    isGroup = true
                 }, entryCount = feeds.sumBy { it.entryCount })
                 newFeedGroups.add(FeedGroup(all, listOf()))
 
                 val subFeedMap = feeds.groupBy { it.feed.groupId }
-//                for(feed in subFeedMap) {
-//                    feed.grou
-//                }
 
                 newFeedGroups.addAll(
                         subFeedMap[null]?.map { FeedGroup(it, subFeedMap[it.feed.id].orEmpty()) }.orEmpty()
@@ -147,29 +147,21 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                 val sponsors = FeedWithCount(feed = Feed().apply {
                     id = Feed.SPONSORS
                     title = "Sponsoren"
-                    groupId = 1
-                    isGroup = true
                 }, entryCount = 0)
 
-                val test1 = FeedWithCount(feed = Feed().apply {
-                    id = Feed.SPONSORS-1
-                    title = "test1"
-                    groupId = 1
-                    isGroup = true
+                val impressum = FeedWithCount(feed = Feed().apply {
+                    id = Feed.IMPRESSUM
+                    title = "Impressum"
                 }, entryCount = 0)
 
-                val test2 = FeedWithCount(feed = Feed().apply {
-                    id = Feed.SPONSORS-2
-                    title = "test2"
-                    groupId = 1
-                    isGroup = true
-                }, entryCount = 0)
+//                 val liveStream = FeedWithCount(feed = Feed().apply {
+//                    id = Feed.LIVESTREAM
+//                    title = "Livestream"
+//                }, entryCount = 0)
 
-                val test = arrayListOf<FeedWithCount>()
-                test.add(sponsors)
-                test.add(test1)
-                test.add(test2)
-                socialFeedGroup.add(FeedGroup(sponsors,test))
+//                socialFeedGroup.add(FeedGroup(liveStream,listOf()))
+                socialFeedGroup.add(FeedGroup(sponsors,listOf()))
+                socialFeedGroup.add(FeedGroup(impressum,listOf()))
 
                 // Do not always call notifyParentDataSetChanged to avoid selection loss during refresh
                 if (hasFeedGroupsChanged(feedGroups, newFeedGroups)) {
@@ -192,7 +184,15 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
 
                 feedAdapter.onFeedClick { _, feedWithCount ->
                     if(feedWithCount.feed.id == Feed.SPONSORS) {
-                        goToSponsors()
+                        goToWebsite("https://steeldeers.de/sponsoren-app/")
+                        closeDrawer()
+                    }
+                    else if(feedWithCount.feed.id == Feed.IMPRESSUM) {
+                        goToWebsite("https://steeldeers.de/impressum-app/")
+                        closeDrawer()
+                    }
+                    else if(feedWithCount.feed.id == Feed.LIVESTREAM) {
+                        goToWebsite("https://steeldeers.de/livestream-app/")
                         closeDrawer()
                     }
                     else {
@@ -446,20 +446,16 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         }
     }
 
-    private fun goToSponsors() {
+    private fun goToWebsite(url:String) {
         clearDetails()
         containers_layout.state = MainNavigator.State.TWO_COLUMNS_EMPTY
-        val currentFragment = supportFragmentManager.findFragmentById(R.id.frame_master)
-        if (currentFragment is SponsorFragment) {
-            // nothing to do
-        } else {
-            val master = SponsorFragment.newInstance()
-            supportFragmentManager
-                    .beginTransaction()
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .replace(R.id.frame_master, master, TAG_MASTER)
-                    .commitAllowingStateLoss()
-        }
+        val master = SponsorFragment.newInstance()
+        master.url = url
+        supportFragmentManager
+                .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.frame_master, master, TAG_MASTER)
+                .commitAllowingStateLoss()
     }
 
     override fun goToEntriesList(feed: Feed?) {

@@ -290,10 +290,9 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
     }
 
     private fun updateBadgeUnread() {
-        if(feed?.id != null && feed?.id != Feed.ALL_ENTRIES_ID) {
+        if (feed?.id != null && feed?.id != Feed.ALL_ENTRIES_ID) {
             doAsync { unreadBadge?.badgeNumber = App.db.entryDao().countUnreadByFeedId(feed!!.id).toInt() }
-        }
-        else {
+        } else {
             doAsync { unreadBadge?.badgeNumber = App.db.entryDao().countUnread.toInt() }
         }
     }

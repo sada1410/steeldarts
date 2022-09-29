@@ -60,6 +60,8 @@ data class Feed(
 
         const val ALL_ENTRIES_ID = -1L
         const val SPONSORS       = -2L
+        const val IMPRESSUM      = -3L
+        const val LIVESTREAM     = -4L
 
         fun getLetterDrawable(feedId: Long, feedTitle: String?, rounded: Boolean = false): TextDrawable {
             val feedName = feedTitle.orEmpty()
