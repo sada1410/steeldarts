@@ -20,7 +20,8 @@
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustPan"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -101,19 +102,24 @@
             android:name="de.steeldeers.app.ui.entrydetails.EntryDetailsActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="true"
+            />
         <activity
             android:name="de.steeldeers.app.ui.about.LicenseActivity"
             android:label="@string/about_steeldeers"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:exported="true"/>
         <activity
             android:name="de.steeldeers.app.ui.about.AppActivity"
             android:label="@string/about_app"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:exported="true"/>
         <activity
             android:name="de.steeldeers.app.ui.settings.SettingsActivity"
             android:label="@string/menu_settings"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:exported="true"/>
 
         <meta-data
             android:name="com.samsung.android.icon_container.has_icon_container"

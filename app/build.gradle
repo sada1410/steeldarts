@@ -8,11 +8,11 @@ androidExtensions {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         applicationId "de.steeldeers.app"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 40
         versionName "0.0.3"
     }
