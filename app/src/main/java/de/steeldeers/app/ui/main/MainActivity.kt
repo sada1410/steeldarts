@@ -160,8 +160,8 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
 //                }, entryCount = 0)
 
 //                socialFeedGroup.add(FeedGroup(liveStream,listOf()))
-                socialFeedGroup.add(FeedGroup(sponsors,listOf()))
-                socialFeedGroup.add(FeedGroup(impressum,listOf()))
+                socialFeedGroup.add(FeedGroup(sponsors, listOf()))
+                socialFeedGroup.add(FeedGroup(impressum, listOf()))
 
                 // Do not always call notifyParentDataSetChanged to avoid selection loss during refresh
                 if (hasFeedGroupsChanged(feedGroups, newFeedGroups)) {
@@ -183,19 +183,16 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                 }
 
                 feedAdapter.onFeedClick { _, feedWithCount ->
-                    if(feedWithCount.feed.id == Feed.SPONSORS) {
+                    if (feedWithCount.feed.id == Feed.SPONSORS) {
                         goToWebsite("https://steeldeers.de/sponsoren-app/")
                         closeDrawer()
-                    }
-                    else if(feedWithCount.feed.id == Feed.IMPRESSUM) {
+                    } else if (feedWithCount.feed.id == Feed.IMPRESSUM) {
                         goToWebsite("https://steeldeers.de/impressum-app/")
                         closeDrawer()
-                    }
-                    else if(feedWithCount.feed.id == Feed.LIVESTREAM) {
+                    } else if (feedWithCount.feed.id == Feed.LIVESTREAM) {
                         goToWebsite("https://steeldeers.de/livestream-app/")
                         closeDrawer()
-                    }
-                    else {
+                    } else {
                         goToEntriesList(feedWithCount.feed)
                         closeDrawer()
                     }
@@ -242,20 +239,27 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
             // First open => we open the drawer for you
             if (getPrefBoolean(PrefConstants.FIRST_OPEN, true)) {
                 putPrefBoolean(PrefConstants.FIRST_OPEN, false)
-//                openDrawer()
-//               showAlertDialog(R.string.welcome_title) { goToFeedSearch() }
-                App.db.feedDao().deleteAll()
-                closeDrawer()
+
+                Thread {
+                    App.db.feedDao().deleteAll()
+                    if (!allFeedsAvailable()) {
+                        addMissingFeeds()
+                    }
+                    removeDeprecatedFeeds()
+                }.start()
+
             }
 
-              goToEntriesList(null)
+            goToEntriesList(null)
         }
+        else {
 
-        doAsync {
-            if( !allFeedsAvailable() ) {
-                addMissingFeeds()
+            doAsync {
+                if (!allFeedsAvailable()) {
+                    addMissingFeeds()
+                }
+                removeDeprecatedFeeds()
             }
-            removeDeprecatedFeeds()
         }
 
         if (getPrefBoolean(PrefConstants.REFRESH_ON_STARTUP, defValue = true)) {
@@ -277,8 +281,8 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
      * @brief adds missing feeds to the database
      */
     private fun addMissingFeeds() {
-        for(i in reqFeeds.indices) {
-            if ( App.db.feedDao().findByLink(reqFeeds[i][1]) == null ) {
+        for (i in reqFeeds.indices) {
+            if (App.db.feedDao().findByLink(reqFeeds[i][1]) == null) {
                 val feedToAdd = Feed(0, reqFeeds[i][1], reqFeeds[i][0])
                 App.db.feedDao().insert(feedToAdd)
             }
@@ -290,15 +294,15 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
      */
     private fun removeDeprecatedFeeds() {
         var allFeeds = App.db.feedDao().all
-        for(feed in allFeeds) {
+        for (feed in allFeeds) {
             var found = false
-            for(i in reqFeeds.indices) {
-                if(Arrays.stream(reqFeeds[i]).anyMatch { t -> t == feed.link }) {
+            for (i in reqFeeds.indices) {
+                if (Arrays.stream(reqFeeds[i]).anyMatch { t -> t == feed.link }) {
                     found = true
                     break
                 }
             }
-            if(!found) {
+            if (!found) {
                 App.db.feedDao().delete(feed)
             }
         }
@@ -308,10 +312,10 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
      * @brief checks if all required feeds are in the database
      * @return true if all required feeds are available, else false
      */
-    private fun allFeedsAvailable():Boolean {
+    private fun allFeedsAvailable(): Boolean {
         var available = true
-        for(i in reqFeeds.indices) {
-            if ( App.db.feedDao().findByLink(reqFeeds[i][1]) == null ) {
+        for (i in reqFeeds.indices) {
+            if (App.db.feedDao().findByLink(reqFeeds[i][1]) == null) {
                 available = false
             }
         }
@@ -446,7 +450,7 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         }
     }
 
-    private fun goToWebsite(url:String) {
+    private fun goToWebsite(url: String) {
         clearDetails()
         containers_layout.state = MainNavigator.State.TWO_COLUMNS_EMPTY
         val master = SponsorFragment.newInstance()

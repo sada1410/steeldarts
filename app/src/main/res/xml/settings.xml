@@ -7,31 +7,6 @@
     <PreferenceCategory
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:title="@string/settings_category_general">
-
-        <de.steeldeers.app.ui.views.AutoSummaryListPreference
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:defaultValue="DARK"
-            android:entries="@array/settings_themes"
-            android:entryValues="@array/settings_themes_values"
-            android:inputType="text"
-            android:key="theme"
-            android:title="@string/settings_theme" />
-
-        <CheckBoxPreference
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:defaultValue="false"
-            android:key="hide_navigation_on_scroll"
-            android:summary="@string/settings_hide_navigation_on_scroll_description"
-            android:title="@string/settings_hide_navigation_on_scroll" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:title="@string/settings_category_article_appearance">
 
 
@@ -115,7 +90,7 @@
         <de.steeldeers.app.ui.views.AutoSummaryListPreference
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:defaultValue="0"
+            android:defaultValue="30"
             android:entries="@array/settings_keep_times"
             android:entryValues="@array/settings_keep_time_values"
             android:inputType="number"
@@ -125,7 +100,7 @@
         <de.steeldeers.app.ui.views.AutoSummaryListPreference
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:defaultValue="0"
+            android:defaultValue="30"
             android:entries="@array/settings_keep_times"
             android:entryValues="@array/settings_keep_time_values"
             android:inputType="number"
@@ -139,13 +114,6 @@
             android:key="remove_duplicates"
             android:summary="@string/settings_remove_duplicates_description"
             android:title="@string/settings_remove_duplicates_description_title" />
-
-        <EditTextPreference
-            android:key="filter_keywords"
-            android:summary="@string/filter"
-            android:title="@string/filter_title"
-            android:dialogMessage="@string/filter_dialog_message"/>
-
 
     </PreferenceCategory>
 

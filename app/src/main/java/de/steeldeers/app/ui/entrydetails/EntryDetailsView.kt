@@ -56,17 +56,20 @@ class EntryDetailsView @JvmOverloads constructor(context: Context, attrs: Attrib
     private val SUBTITLE_COLOR = colorString(R.attr.colorSubtitle)
     private val SUBTITLE_BORDER_COLOR = "solid " + colorString(R.attr.colorSubtitleBorder)
     private val CSS = "<head><style type='text/css'> " +
-            "body {max-width: 100%; margin: 0.3cm; font-family: sans-serif-light; color: " + TEXT_COLOR + "; background-color:" + BACKGROUND_COLOR + "; line-height: 150%} " +
+            "body {max-width: 100%; margin: 0.3cm; font-family: sans-serif-light; color: #eee; background-color:" + BACKGROUND_COLOR + "; line-height: 150%} " +
             "* {max-width: 100%; word-break: break-word}" +
-            "h1, h2 {font-weight: normal; line-height: 130%} " +
+            "h1, h2 {font-weight: normal; line-height: 130%; color: #71b2f9;} " +
             "h1 {font-size: 170%; margin-bottom: 0.1em} " +
             "h2 {font-size: 140%} " +
+            "code { display:none}" +
+            "iframe {width: 100% }" +
+            "td { width: auto !important }" +
             "a {color: #0099CC}" +
             "h1 a {color: inherit; text-decoration: none}" +
             "img {height: auto} " +
             "pre {white-space: pre-wrap; direction: ltr;} " +
             "blockquote {border-left: thick solid " + QUOTE_LEFT_COLOR + "; background-color:" + QUOTE_BACKGROUND_COLOR + "; margin: 0.5em 0 0.5em 0em; padding: 0.5em} " +
-            "p {margin: 0.8em 0 0.8em 0} " +
+            "p {margin: 0.8em 0 0.8em 0 } " +
             "p.subtitle {color: " + SUBTITLE_COLOR + "; border-top:1px " + SUBTITLE_BORDER_COLOR + "; border-bottom:1px " + SUBTITLE_BORDER_COLOR + "; padding-top:2px; padding-bottom:2px; font-weight:800 } " +
             "ul, ol {margin: 0 0 0.8em 0.6em; padding: 0 0 0 1em} " +
             "ul li, ol li {margin: 0 0 0.8em 0; padding: 0} " +
