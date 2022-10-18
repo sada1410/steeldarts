@@ -87,7 +87,6 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
     var feed: Feed? = null
         set(value) {
             field = value
-
             setupTitle()
             bottom_navigation.post { initDataObservers() } // Needed to retrieve the correct selected tab position
         }
@@ -310,6 +309,8 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
 
         val hideFAB = context?.getPrefBoolean(PrefConstants.HIDE_BUTTON_MARK_ALL_AS_READ, false) == true
 
+        recycler_view.scrollToPosition(0)
+
         if (context?.getPrefBoolean(PrefConstants.HIDE_NAVIGATION_ON_SCROLL, false) == true) {
             bottom_navigation.updateLayoutParams<CoordinatorLayout.LayoutParams> {
                 if (behavior !is HideBottomViewOnScrollBehavior) {
@@ -321,6 +322,7 @@ class EntriesFragment : Fragment(R.layout.fragment_entries) {
                 recycler_view.removeOnScrollListener(it)
                 fabScrollListener = null
             }
+
             if (hideFAB) {
                 read_all_fab.hide()
             } else {

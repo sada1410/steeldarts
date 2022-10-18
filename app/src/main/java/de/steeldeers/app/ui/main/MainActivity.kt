@@ -17,6 +17,9 @@
 
 package de.steeldeers.app.ui.main
 
+import android.Manifest
+import android.Manifest.permission
+import android.Manifest.permission.START_VIEW_PERMISSION_USAGE
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
@@ -45,6 +48,7 @@ import de.steeldeers.app.App
 import de.steeldeers.app.data.entities.Feed
 import de.steeldeers.app.data.entities.FeedWithCount
 import de.steeldeers.app.data.utils.PrefConstants
+import de.steeldeers.app.data.utils.XmlDownloader
 import de.steeldeers.app.service.AutoRefreshJobService
 import de.steeldeers.app.service.FetcherService
 import de.steeldeers.app.ui.about.AppActivity
@@ -63,6 +67,19 @@ import pub.devrel.easypermissions.EasyPermissions
 import java.io.*
 import java.net.URL
 import java.util.*
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.content.Context
+
+import androidx.core.app.ActivityCompat
+
+import android.os.Build
+import android.os.Build.VERSION
+
+import android.os.Build.VERSION.SDK_INT
+import android.provider.Settings
+import de.steeldeers.app.data.utils.Link
+import de.steeldeers.app.data.utils.XmlLinkHandler
+import java.lang.Exception
 
 
 class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
@@ -70,17 +87,7 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
     companion object {
         const val EXTRA_FROM_NOTIF = "EXTRA_FROM_NOTIF"
 
-        val reqFeeds = arrayOf(
-                //       Menu name     Link to feed
-                arrayOf("Allgemeine Berichte", "https://steeldeers.de/allg-berichte/feed"),
-                arrayOf("Events", "https://steeldeers.de/category/events/feed"),
-                arrayOf("Livestreams", "https://steeldeers.de/category/livestream/feed"),
-                arrayOf("Spielberichte", "https://steeldeers.de/category/spielberichte/feed"),
-                arrayOf("Spielberichte NOBDV", "https://steeldeers.de/category/spielberichte-nobdv/feed"),
-                arrayOf("Spielberichte NOBDV Pokal", "https://steeldeers.de/category/spielberichte-nobdv/spielberichte-nobdv-pokal/feed"),
-                arrayOf("Spielberichte NOBDV Team 1", "https://steeldeers.de/category/spielberichte-nobdv/spielberichte-nobdv-team-1/feed"),
-                arrayOf("Spielberichte NOBDV Team 2", "https://steeldeers.de/category/spielberichte-nobdv/spielberichte-nobdv-team-2/feed"),
-        )
+        var links = ArrayList<Link>()
 
         var isInForeground = false
 
@@ -130,12 +137,12 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         App.db.feedDao().observeAllWithCount.observe(this@MainActivity, { nullableFeeds ->
             nullableFeeds?.let { feeds ->
                 val newFeedGroups = mutableListOf<FeedGroup>()
-                val socialFeedGroup = mutableListOf<FeedGroup>()
 
                 val all = FeedWithCount(feed = Feed().apply {
                     id = Feed.ALL_ENTRIES_ID
                     title = getString(R.string.all_entries)
                 }, entryCount = feeds.sumBy { it.entryCount })
+
                 newFeedGroups.add(FeedGroup(all, listOf()))
 
                 val subFeedMap = feeds.groupBy { it.feed.groupId }
@@ -144,30 +151,10 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                         subFeedMap[null]?.map { FeedGroup(it, subFeedMap[it.feed.id].orEmpty()) }.orEmpty()
                 )
 
-                val sponsors = FeedWithCount(feed = Feed().apply {
-                    id = Feed.SPONSORS
-                    title = "Sponsoren"
-                }, entryCount = 0)
-
-                val impressum = FeedWithCount(feed = Feed().apply {
-                    id = Feed.IMPRESSUM
-                    title = "Impressum"
-                }, entryCount = 0)
-
-//                 val liveStream = FeedWithCount(feed = Feed().apply {
-//                    id = Feed.LIVESTREAM
-//                    title = "Livestream"
-//                }, entryCount = 0)
-
-//                socialFeedGroup.add(FeedGroup(liveStream,listOf()))
-                socialFeedGroup.add(FeedGroup(sponsors, listOf()))
-                socialFeedGroup.add(FeedGroup(impressum, listOf()))
-
                 // Do not always call notifyParentDataSetChanged to avoid selection loss during refresh
                 if (hasFeedGroupsChanged(feedGroups, newFeedGroups)) {
                     feedGroups.clear()
                     feedGroups += newFeedGroups
-                    feedGroups += socialFeedGroup
 
                     feedAdapter.notifyParentDataSetChanged(true)
 
@@ -183,14 +170,8 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
                 }
 
                 feedAdapter.onFeedClick { _, feedWithCount ->
-                    if (feedWithCount.feed.id == Feed.SPONSORS) {
-                        goToWebsite("https://steeldeers.de/sponsoren-app/")
-                        closeDrawer()
-                    } else if (feedWithCount.feed.id == Feed.IMPRESSUM) {
-                        goToWebsite("https://steeldeers.de/impressum-app/")
-                        closeDrawer()
-                    } else if (feedWithCount.feed.id == Feed.LIVESTREAM) {
-                        goToWebsite("https://steeldeers.de/livestream-app/")
+                    if (!feedWithCount.feed.block) {
+                        goToWebsite(feedWithCount.feed.link)
                         closeDrawer()
                     } else {
                         goToEntriesList(feedWithCount.feed)
@@ -235,31 +216,36 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
             }
         })
 
+
+
         if (savedInstanceState == null) {
             // First open => we open the drawer for you
-            if (getPrefBoolean(PrefConstants.FIRST_OPEN, true)) {
-                putPrefBoolean(PrefConstants.FIRST_OPEN, false)
-
-                Thread {
-                    App.db.feedDao().deleteAll()
-                    if (!allFeedsAvailable()) {
-                        addMissingFeeds()
-                    }
-                    removeDeprecatedFeeds()
-                }.start()
-
-            }
-
-            goToEntriesList(null)
-        }
-        else {
-
             doAsync {
+                if (getPrefBoolean(PrefConstants.FIRST_OPEN, true)) {
+                    putPrefBoolean(PrefConstants.FIRST_OPEN, false)
+
+                    doAsync {
+                        App.db.feedDao().deleteAll()
+                    }
+
+                }
+
+                var xmlDownloader = XmlDownloader("https://steeldeers.de/wp-content/uploads/2022/10/app_sites.xml", "app_navigation.xml", applicationContext)
+                xmlDownloader.download()
+                val parser = XmlLinkHandler()
+
+                var file = File(applicationContext.getDir("data", Context.MODE_PRIVATE).toString() + "app_navigation" + ".xml")
+                var inputStream = file.inputStream()
+                links = parser.parse(inputStream)
+
                 if (!allFeedsAvailable()) {
                     addMissingFeeds()
                 }
                 removeDeprecatedFeeds()
             }
+
+            goToEntriesList(null)
+
         }
 
         if (getPrefBoolean(PrefConstants.REFRESH_ON_STARTUP, defValue = true)) {
@@ -281,9 +267,9 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
      * @brief adds missing feeds to the database
      */
     private fun addMissingFeeds() {
-        for (i in reqFeeds.indices) {
-            if (App.db.feedDao().findByLink(reqFeeds[i][1]) == null) {
-                val feedToAdd = Feed(0, reqFeeds[i][1], reqFeeds[i][0])
+        for (i in links) {
+            if (App.db.feedDao().findByLink(i.url) == null) {
+                val feedToAdd = Feed(0, i.url, i.isBlock, i.title)
                 App.db.feedDao().insert(feedToAdd)
             }
         }
@@ -296,8 +282,9 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
         var allFeeds = App.db.feedDao().all
         for (feed in allFeeds) {
             var found = false
-            for (i in reqFeeds.indices) {
-                if (Arrays.stream(reqFeeds[i]).anyMatch { t -> t == feed.link }) {
+            for (i in links) {
+                if(feed.link == i.url)
+                {
                     found = true
                     break
                 }
@@ -314,9 +301,10 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
      */
     private fun allFeedsAvailable(): Boolean {
         var available = true
-        for (i in reqFeeds.indices) {
-            if (App.db.feedDao().findByLink(reqFeeds[i][1]) == null) {
+        for(i in links) {
+            if( App.db.feedDao().findByLink(i.url) == null) {
                 available = false
+                break
             }
         }
         return available
@@ -362,32 +350,12 @@ class MainActivity : AppCompatActivity(), MainNavigator, AnkoLogger {
     }
 
     private fun handleImplicitIntent(intent: Intent?) {
-        // Has to be called on onStart (when the app is closed) and on onNewIntent (when the app is in the background)
-
-        // TODO delete these lines, if not required
-        // Add feed urls from Open with
-//        if (intent?.action.equals(Intent.ACTION_VIEW)) {
-//            val search: String = intent?.data.toString()
-//            DiscoverActivity.newInstance(this, search)
-//            setIntent(null)
-//        }
-//        // Add feed urls from Share menu
-//        if (intent?.action.equals(Intent.ACTION_SEND)) {
-//            if (intent?.hasExtra(Intent.EXTRA_TEXT) == true) {
-//                val search = intent.getStringExtra(Intent.EXTRA_TEXT)
-//                if (search != null) {
-//                    DiscoverActivity.newInstance(this, search)
-//                }
-//            }
-//            setIntent(null)
-//        }
-//
-//        // If we just clicked on the notification, let's go back to the default view
-//        if (intent?.getBooleanExtra(EXTRA_FROM_NOTIF, false) == true && feedGroups.isNotEmpty()) {
-//            feedAdapter.selectedItemId = Feed.ALL_ENTRIES_ID
-//            goToEntriesList(feedGroups[0].feedWithCount.feed)
-//            bottom_navigation.selectedItemId = R.id.unreads
-//        }
+        // If we just clicked on the notification, let's go back to the default view
+        if (intent?.getBooleanExtra(EXTRA_FROM_NOTIF, false) == true && feedGroups.isNotEmpty()) {
+            feedAdapter.selectedItemId = Feed.ALL_ENTRIES_ID
+            goToEntriesList(feedGroups[0].feedWithCount.feed)
+            bottom_navigation.selectedItemId = R.id.unreads
+        }
     }
 
     private fun handleResumeOnlyIntents(intent: Intent?) {

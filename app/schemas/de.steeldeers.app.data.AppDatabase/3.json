@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "31435aa9bc89d78889a9d396fa842371",
+    "identityHash": "ef07aa3534514f880c863463de49d689",
     "entities": [
       {
         "tableName": "feeds",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`feedId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `feedLink` TEXT NOT NULL, `feedTitle` TEXT, `feedImageLink` TEXT, `fetchError` INTEGER NOT NULL, `retrieveFullText` INTEGER NOT NULL, `isGroup` INTEGER NOT NULL, `groupId` INTEGER, `displayPriority` INTEGER NOT NULL, `lastManualActionUid` TEXT NOT NULL, FOREIGN KEY(`groupId`) REFERENCES `feeds`(`feedId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`feedId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `feedLink` TEXT NOT NULL, `block` INTEGER NOT NULL, `feedTitle` TEXT, `feedImageLink` TEXT, `fetchError` INTEGER NOT NULL, `retrieveFullText` INTEGER NOT NULL, `isGroup` INTEGER NOT NULL, `groupId` INTEGER, `displayPriority` INTEGER NOT NULL, `lastManualActionUid` TEXT NOT NULL, FOREIGN KEY(`groupId`) REFERENCES `feeds`(`feedId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -18,6 +18,12 @@
             "fieldPath": "link",
             "columnName": "feedLink",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block",
+            "columnName": "block",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -281,7 +287,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '31435aa9bc89d78889a9d396fa842371')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ef07aa3534514f880c863463de49d689')"
     ]
   }
 }
